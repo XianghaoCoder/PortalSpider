@@ -1,0 +1,5 @@
+# ignore cache caused by compiling python files
+*.pyc
+
+# ignore cache of Finder
+.DS_Store
