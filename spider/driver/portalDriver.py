@@ -1,10 +1,9 @@
 from selenium import webdriver
 import requests
 
-from spider.settings import Settings
-from spider.exceptions import NoSuchPropertyException, InvalidTimetableException, NotLoggedInPortalException
-from spider.functions import parse_class_text
-from spider.tools import download_photo
+from spider.driver.settings import Settings
+from spider.driver.exceptions import NoSuchPropertyException, InvalidTimetableException, NotLoggedInPortalException
+from spider.driver.functions import parse_class_text, download_photo
 
 class PortalDriver:
 	"""A webdriver that is able to manipulate the Portal websites.
@@ -58,7 +57,7 @@ class PortalDriver:
 		submit_button.click()
 
 
-	def getData(self, name, infoList=Settings.defaultStudentBasicInfoList):
+	def getData(self, name, infoList):
 		"""Get data including basic information, photo and timetable of a stuent from Portal.
 
 		Exceptions will be raised if the name in infoList is not a property of basic information, 
@@ -102,7 +101,7 @@ class PortalDriver:
 		photo = download_photo(Settings.photoSuffixUrl + name)
 		return photo
 
-	def getBasicInfo(self, name, infoList=Settings.defaultStudentBasicInfoList):
+	def getBasicInfo(self, name, infoList):
 		"""Get basic information except timetable of a peroson from Portal.
 
 		This method will jump to the basic information page of a peroson, and collect data from it.
@@ -172,10 +171,13 @@ class PortalDriver:
 
 		self.toTimetablePage(name) # jump to the timetable page
 
+		weekdays = Settings.weekdays # a list containig names (abbr.) of each weekday
+		periods = Settings.periods # a list containing names of eahc period
+
 		classes_map = dict() # initalize the dict mapping each time to the content of each classes
-		for weekday in Settings.weekdays:
+		for weekday in weekdays:
 			classes_map[weekday] = dict()
-			for period in Settings.periods:
+			for period in periods:
 				classes_map[weekday][period] = None
 
 		raw_classes = self.driver.find_elements_by_xpath("//table[@summary='SAT timetable']/tbody/tr/td")  # get raw text of all classes  
@@ -185,13 +187,13 @@ class PortalDriver:
 
 		# if the number of classes is not equal to that it should have,
 		# then this timetable is invalid
-		if len(classes_list) != len(Settings.weekdays) * len(Settings.periods):
+		if len(classes_list) != len(weekdays) * len(periods):
 			raise InvalidTimetableException(name)
 
 		# put the list information of each classes into a dictionary
 		count = 0
-		for period in Settings.periods:
-			for weekday in Settings.weekdays:
+		for period in periods:
+			for weekday in weekdays:
 				classes_map[weekday][period] = classes_list[count]
 				count += 1
 

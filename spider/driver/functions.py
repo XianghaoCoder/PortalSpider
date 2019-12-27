@@ -1,5 +1,25 @@
-from spider.settings import Settings
-from spider.exceptions import InvalidTimetableException
+import requests
+
+from spider.driver.settings import Settings
+from spider.driver.exceptions import InvalidTimetableException
+
+
+def download_photo(url):
+	"""Download a photo from the url, then store it in a variable and return this variable.
+
+	Args:
+		url: the url of this photo
+
+	Returns:
+		the content of the photo,
+		if cannot find this url, then return None
+	"""
+
+	image = requests.get(url)
+	if image.status_code == 200:
+		return image.content
+	else:
+		return None
 
 
 def parse_class_text(class_text):
