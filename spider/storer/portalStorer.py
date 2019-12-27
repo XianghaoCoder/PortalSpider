@@ -1,3 +1,5 @@
+import os
+
 from spider.storer.settings import Settings
 from spider.storer.functions import write_data_json
 
@@ -46,6 +48,8 @@ class PortalStorer:
 
 	def toDataDirectory(self):
 		"""Change the cuurent directory to data directory.
+
+			If data directory does not exist, it will create one.
 		"""
 
 		if len(self.__currentDirectory) == 2:
@@ -53,13 +57,23 @@ class PortalStorer:
 
 		self.__currentDirectory.append(Settings.dataDirectory)
 
+		path = self.getCurrentDirectory()
+		if not os.path.exists(path):
+			os.makedirs(path)
+
 	def toPhotoDirectory(self):
-		"""Change the cuurent directory to photos directory.
+		"""Change the current directory to photos directory.
+
+			If photos directory does not exist, it will create one.
 		"""
 		if len(self.__currentDirectory) == 2:
 			self.__currentDirectory.pop()
 
 		self.__currentDirectory.append(Settings.photosDirectory)
+
+		path = self.getCurrentDirectory()
+		if not os.path.exists(path):
+			os.makedirs(path)
 
 	def getCurrentPath(self, fileName):
 		"""Get the current the path of the file that will be created.
@@ -71,9 +85,20 @@ class PortalStorer:
 			The current path of the file that will be created.
 		"""
 
+		path = self.getCurrentDirectory()
+		path += fileName
+
+		return path
+
+	def getCurrentDirectory(self):
+		"""Get the current directory that the storer is in.
+
+		Returns:
+			the path of the current directory.
+		"""
+
 		path = ""
 		for item in self.__currentDirectory:
 			path += item
-		path += fileName
 
 		return path
